@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { resend, FROM_EMAIL, FROM_NAME } from '@/lib/resend'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders })
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -57,9 +67,9 @@ export async function POST(req: NextRequest) {
       `,
     })
 
-    return NextResponse.json({ message: 'Subscribed successfully' }, { status: 201 })
+    return NextResponse.json({ message: 'Subscribed successfully' }, { status: 201, headers: corsHeaders })
   } catch (err) {
     console.error('Subscribe error:', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: corsHeaders })
   }
 }
