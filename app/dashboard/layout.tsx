@@ -7,10 +7,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="w-56 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-5 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-green-700 rounded-full flex items-center justify-center text-white text-xs font-bold">A</div>
+            <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold">D</div>
             <div>
-              <p className="text-xs font-semibold text-gray-900 leading-none">AATG Newsletter</p>
-              <p className="text-xs text-gray-400 mt-0.5">animalsaroundtheglobe.com</p>
+              <p className="text-xs font-semibold text-gray-900 leading-none">Doggo Digest Newsletter</p>
+              <p className="text-xs text-gray-400 mt-0.5">doggodigest.com</p>
             </div>
           </div>
         </div>
@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
         <div className="p-3 border-t border-gray-200">
-          <p className="text-xs text-gray-400 px-3">Animals Around the Globe</p>
+          <p className="text-xs text-gray-400 px-3">Doggo Digest</p>
         </div>
       </aside>
 

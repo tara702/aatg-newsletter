@@ -32,7 +32,7 @@ export default function DashboardPage() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Overview</h1>
-        <p className="text-sm text-gray-500 mt-1">AATG Newsletter Analytics</p>
+        <p className="text-sm text-gray-500 mt-1">Doggo Digest Newsletter Analytics</p>
       </div>
 
       {/* Stat Cards */}
@@ -79,7 +79,7 @@ export default function DashboardPage() {
               {stats.topSources.map(({ url, count }) => (
                 <div key={url} className="flex items-center justify-between">
                   <p className="text-xs text-gray-600 truncate max-w-[160px]" title={url}>
-                    {url.replace('https://animalsaroundtheglobe.com', '')}
+                    {url.replace('https://doggodigest.com', '')}
                   </p>
                   <span className="text-xs font-semibold text-gray-800 ml-2">{count}</span>
                 </div>

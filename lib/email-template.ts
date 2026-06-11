@@ -23,8 +23,8 @@ export function buildEmailHtml({
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
 
         <!-- Header -->
-        <tr><td style="background:#2d5a27;padding:28px 40px;text-align:center;">
-          <p style="margin:0;color:#a8d5a2;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">Animals Around the Globe</p>
+        <tr><td style="background:#c05a1a;padding:28px 40px;text-align:center;">
+          <p style="margin:0;color:#f5d5b8;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">Doggo Digest</p>
           <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:normal;font-family:Georgia,serif;">${subject}</h1>
         </td></tr>
 
@@ -71,7 +71,7 @@ export function buildDigestHtml({
         <a href="${a.url}" style="color:#1a1a1a;text-decoration:none;">${a.title}</a>
       </h2>
       <p style="margin:0 0 14px;color:#555;font-size:15px;line-height:1.6;">${a.excerpt}</p>
-      <a href="${a.url}" style="display:inline-block;background:#2d5a27;color:#fff;padding:10px 20px;border-radius:4px;font-family:Arial,sans-serif;font-size:13px;text-decoration:none;font-weight:bold;">Read More →</a>
+      <a href="${a.url}" style="display:inline-block;background:#c05a1a;color:#fff;padding:10px 20px;border-radius:4px;font-family:Arial,sans-serif;font-size:13px;text-decoration:none;font-weight:bold;">Read More →</a>
     </td></tr>
   `).join('')
 
