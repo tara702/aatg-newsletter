@@ -38,7 +38,7 @@ function LoginForm() {
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 bg-green-700 rounded-full flex items-center justify-center text-white font-bold">A</div>
           <div>
-            <p className="font-semibold text-gray-900 text-sm">AATG Newsletter</p>
+            <p className="font-semibold text-gray-900 text-sm">Animals Around The Globe</p>
             <p className="text-xs text-gray-400">Dashboard</p>
           </div>
         </div>
