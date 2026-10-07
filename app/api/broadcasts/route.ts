@@ -25,6 +25,12 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error }, { status: 500 })
+  if (error) {
+    console.error('Create broadcast error:', error)
+    return NextResponse.json(
+      { error: error.message || 'Failed to create broadcast', details: error },
+      { status: 500 }
+    )
+  }
   return NextResponse.json(data, { status: 201 })
 }

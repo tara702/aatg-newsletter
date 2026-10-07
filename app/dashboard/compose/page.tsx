@@ -77,6 +77,18 @@ export default function ComposePage() {
       )
       .join('<hr style="border:none;border-top:1px solid #e8e8e4;margin:0 0 32px" />')
 
+  const formatError = (payload: any) => {
+    if (!payload) return 'Unknown error'
+    if (typeof payload === 'string') return payload
+    if (payload.message) return payload.message
+    if (payload.error) return formatError(payload.error)
+    try {
+      return JSON.stringify(payload)
+    } catch {
+      return 'Unknown error'
+    }
+  }
+
   const saveDraft = async () => {
     const res = await fetch('/api/broadcasts', {
       method: 'POST',
@@ -88,37 +100,51 @@ export default function ComposePage() {
         contentType: 'digest',
       }),
     })
-    return await res.json()
+    const data = await res.json()
+    if (!res.ok || !data?.id) {
+      throw new Error(formatError(data) || 'Failed to save broadcast draft')
+    }
+    return data
   }
 
   const sendTest = async () => {
     if (!testEmail || !subject) return setStatus('Subject and test email required')
     if (selectedArticles.length === 0) return setStatus('Select at least one article')
     setSending(true)
-    const draft = await saveDraft()
-    const res = await fetch('/api/broadcasts/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ broadcastId: draft.id, testEmail }),
-    })
-    const data = await res.json()
-    setStatus(data.message || data.error)
-    setSending(false)
+    try {
+      const draft = await saveDraft()
+      const res = await fetch('/api/broadcasts/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ broadcastId: draft.id, testEmail }),
+      })
+      const data = await res.json()
+      setStatus(data.message || formatError(data))
+    } catch (err: any) {
+      setStatus(err?.message || 'Failed to send test email')
+    } finally {
+      setSending(false)
+    }
   }
 
   const sendAll = async () => {
     if (!subject || selectedArticles.length === 0) return setStatus('Subject and at least one article required')
     if (!confirm('Send to all active subscribers?')) return
     setSending(true)
-    const draft = await saveDraft()
-    const res = await fetch('/api/broadcasts/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ broadcastId: draft.id }),
-    })
-    const data = await res.json()
-    setStatus(data.message || data.error)
-    setSending(false)
+    try {
+      const draft = await saveDraft()
+      const res = await fetch('/api/broadcasts/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ broadcastId: draft.id }),
+      })
+      const data = await res.json()
+      setStatus(data.message || formatError(data))
+    } catch (err: any) {
+      setStatus(err?.message || 'Failed to send broadcast')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
