@@ -54,12 +54,12 @@ export async function POST(req: NextRequest) {
     await resend.emails.send({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: email,
-      subject: 'Welcome to Doggo Digest 🐾',
+      subject: 'Welcome to Animals Around The Globe',
       html: `
         <p>Hi ${firstName || 'there'},</p>
-        <p>Welcome! You're now subscribed to the Doggo Digest newsletter.</p>
-        <p>We'll send you the best dog stories, care tips, and heartfelt moments every week.</p>
-        <p>Talk soon,<br/>The Doggo Digest Team</p>
+        <p>Welcome! You're now subscribed to the Animals Around The Globe newsletter.</p>
+        <p>We'll send you the best animal stories, wildlife insights, and nature moments from around the world.</p>
+        <p>Talk soon,<br/>The Animals Around The Globe Team</p>
         <hr/>
         <p style="font-size:12px;color:#888;">
           <a href="${process.env.NEXT_PUBLIC_APP_URL}/api/unsubscribe?email=${encodeURIComponent(email)}">Unsubscribe</a>

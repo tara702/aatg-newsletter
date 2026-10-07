@@ -24,7 +24,7 @@ export function buildEmailHtml({
 
         <!-- Header -->
         <tr><td style="background:#c05a1a;padding:28px 40px;text-align:center;">
-          <p style="margin:0;color:#f5d5b8;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">Doggo Digest</p>
+          <p style="margin:0;color:#f5d5b8;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">Animals Around The Globe</p>
           <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:normal;font-family:Georgia,serif;">${subject}</h1>
         </td></tr>
 

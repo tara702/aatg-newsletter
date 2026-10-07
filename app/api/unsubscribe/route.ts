@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(
     `<html><body style="font-family:sans-serif;text-align:center;padding:60px">
       <h2>You've been unsubscribed</h2>
-      <p>You won't receive any more emails from Animals Around the Globe.</p>
+      <p>You won't receive any more emails from Animals Around The Globe.</p>
     </body></html>`,
     { headers: { 'Content-Type': 'text/html' } }
   )
