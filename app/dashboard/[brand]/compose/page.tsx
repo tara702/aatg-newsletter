@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
+import { defaultDigestSubject, getBrand } from '@/lib/brands'
 
 interface Article {
   id: number
@@ -10,16 +11,15 @@ interface Article {
   imageUrl?: string | null
 }
 
-function defaultSubject() {
-  return `The Animal Digest — ${new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })}`
-}
+export default function ComposePage({
+  params,
+}: {
+  params: Promise<{ brand: string }>
+}) {
+  const { brand: slug } = use(params)
+  const brand = getBrand(slug)
 
-export default function ComposePage() {
-  const [subject, setSubject] = useState(defaultSubject)
+  const [subject, setSubject] = useState('')
   const [preheader, setPreheader] = useState('')
   const [testEmail, setTestEmail] = useState('')
   const [articles, setArticles] = useState<Article[]>([])
@@ -29,12 +29,18 @@ export default function ComposePage() {
   const [sending, setSending] = useState(false)
 
   useEffect(() => {
+    if (!brand) return
+    setSubject(defaultDigestSubject(brand))
+  }, [brand])
+
+  useEffect(() => {
+    if (!brand) return
     let cancelled = false
 
     const loadArticles = async () => {
       setLoadingArticles(true)
       try {
-        const res = await fetch('/api/rss')
+        const res = await fetch(`/api/${brand.slug}/rss`)
         const data = await res.json()
         if (cancelled) return
         if (Array.isArray(data)) {
@@ -54,7 +60,9 @@ export default function ComposePage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [brand])
+
+  if (!brand) return null
 
   const toggleArticle = (article: Article) => {
     setSelectedArticles(prev =>
@@ -72,7 +80,7 @@ export default function ComposePage() {
             ${a.imageUrl ? `<img src="${a.imageUrl}" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;margin-bottom:12px" />` : ''}
             <h2 style="margin:0 0 8px;font-size:20px"><a href="${a.url}" style="color:#1a1a1a;text-decoration:none">${a.title}</a></h2>
             <p style="margin:0 0 12px;color:#555">${a.excerpt}</p>
-            <a href="${a.url}" style="background:#2d5a27;color:#fff;padding:8px 16px;border-radius:4px;text-decoration:none;font-size:13px">Read More →</a>
+            <a href="${a.url}" style="background:${brand.accentColor};color:#fff;padding:8px 16px;border-radius:4px;text-decoration:none;font-size:13px">Read More →</a>
           </div>`
       )
       .join('<hr style="border:none;border-top:1px solid #e8e8e4;margin:0 0 32px" />')
@@ -90,7 +98,7 @@ export default function ComposePage() {
   }
 
   const saveDraft = async () => {
-    const res = await fetch('/api/broadcasts', {
+    const res = await fetch(`/api/${brand.slug}/broadcasts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -113,7 +121,7 @@ export default function ComposePage() {
     setSending(true)
     try {
       const draft = await saveDraft()
-      const res = await fetch('/api/broadcasts/send', {
+      const res = await fetch(`/api/${brand.slug}/broadcasts/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ broadcastId: draft.id, testEmail }),
@@ -129,11 +137,11 @@ export default function ComposePage() {
 
   const sendAll = async () => {
     if (!subject || selectedArticles.length === 0) return setStatus('Subject and at least one article required')
-    if (!confirm('Send to all active subscribers?')) return
+    if (!confirm(`Send to all active ${brand.name} subscribers?`)) return
     setSending(true)
     try {
       const draft = await saveDraft()
-      const res = await fetch('/api/broadcasts/send', {
+      const res = await fetch(`/api/${brand.slug}/broadcasts/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ broadcastId: draft.id }),
@@ -150,16 +158,11 @@ export default function ComposePage() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">The Animal Digest</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">{brand.digestName}</h1>
         <p className="text-sm text-gray-500 mt-1">
           Build a digest from the latest posts on{' '}
-          <a
-            href="https://www.animalsaroundtheglobe.com/"
-            target="_blank"
-            rel="noreferrer"
-            className="text-green-700 hover:underline"
-          >
-            animalsaroundtheglobe.com
+          <a href={brand.siteUrl} target="_blank" rel="noreferrer" className="hover:underline" style={{ color: brand.accentColor }}>
+            {brand.domain}
           </a>
         </p>
       </div>
@@ -172,8 +175,8 @@ export default function ComposePage() {
               <input
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
-                placeholder="The Animal Digest — October 7, 2026"
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-600"
+                placeholder={defaultDigestSubject(brand)}
+                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1"
               />
             </div>
             <div>
@@ -181,8 +184,8 @@ export default function ComposePage() {
               <input
                 value={preheader}
                 onChange={e => setPreheader(e.target.value)}
-                placeholder="This week's best animal stories..."
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-600"
+                placeholder="This week's best stories..."
+                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1"
               />
             </div>
           </div>
@@ -196,11 +199,10 @@ export default function ComposePage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setSelectedArticles(
-                      selectedArticles.length === articles.length ? [] : articles
-                    )
+                    setSelectedArticles(selectedArticles.length === articles.length ? [] : articles)
                   }
-                  className="text-xs text-green-700 font-medium hover:underline"
+                  className="text-xs font-medium hover:underline"
+                  style={{ color: brand.accentColor }}
                 >
                   {selectedArticles.length === articles.length ? 'Deselect all' : 'Select all'}
                 </button>
@@ -208,7 +210,7 @@ export default function ComposePage() {
             </div>
 
             {loadingArticles ? (
-              <p className="text-sm text-gray-400">Loading articles from Animals Around The Globe...</p>
+              <p className="text-sm text-gray-400">Loading articles from {brand.name}...</p>
             ) : articles.length === 0 ? (
               <p className="text-sm text-gray-400">No articles found in the RSS feed.</p>
             ) : (
@@ -220,18 +222,12 @@ export default function ComposePage() {
                       key={a.id}
                       onClick={() => toggleArticle(a)}
                       className={`p-3 rounded border cursor-pointer transition-colors ${
-                        selected
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                        selected ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         {a.imageUrl && (
-                          <img
-                            src={a.imageUrl}
-                            alt=""
-                            className="w-12 h-12 object-cover rounded flex-shrink-0"
-                          />
+                          <img src={a.imageUrl} alt="" className="w-12 h-12 object-cover rounded flex-shrink-0" />
                         )}
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-800">{a.title}</p>
@@ -267,7 +263,7 @@ export default function ComposePage() {
                 value={testEmail}
                 onChange={e => setTestEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-600"
+                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1"
               />
             </div>
 
@@ -282,7 +278,8 @@ export default function ComposePage() {
             <button
               onClick={sendAll}
               disabled={sending}
-              className="w-full py-2.5 bg-green-700 text-white rounded text-sm font-medium hover:bg-green-800 disabled:opacity-50 transition-colors"
+              className="w-full py-2.5 text-white rounded text-sm font-medium disabled:opacity-50 transition-colors"
+              style={{ backgroundColor: brand.accentColor }}
             >
               {sending ? 'Sending...' : '🚀 Send to all subscribers'}
             </button>

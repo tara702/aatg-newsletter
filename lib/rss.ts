@@ -1,7 +1,3 @@
-import { NextResponse } from 'next/server'
-
-const FEED_URL = 'https://www.animalsaroundtheglobe.com/feed/'
-
 function stripHtml(html: string): string {
   return html
     .replace(/<[^>]+>/g, ' ')
@@ -30,15 +26,17 @@ function extractImage(block: string): string | null {
   const media = block.match(/<media:content[^>]*url=["']([^"']+)["'][^>]*>/i)
   if (media?.[1]) return media[1]
 
-  const enclosure = block.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*(?:type=["']image\/[^"']*["'])?[^>]*>/i)
+  const enclosure = block.match(
+    /<enclosure[^>]*url=["']([^"']+)["'][^>]*(?:type=["']image\/[^"']*["'])?[^>]*>/i
+  )
   if (enclosure?.[1]) return enclosure[1]
 
   const img = block.match(/<img[^>]*src=["']([^"']+)["'][^>]*>/i)
   return img?.[1] || null
 }
 
-function parseRssItems(xml: string) {
-  const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)].slice(0, 10)
+export function parseRssItems(xml: string, limit = 10) {
+  const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)].slice(0, limit)
 
   return items.map((match, index) => {
     const block = match[1]
@@ -62,26 +60,4 @@ function parseRssItems(xml: string) {
       date,
     }
   })
-}
-
-export async function GET() {
-  try {
-    const res = await fetch(FEED_URL, {
-      next: { revalidate: 300 },
-      headers: {
-        'User-Agent': 'AnimalsAroundTheGlobe-Newsletter/1.0',
-        Accept: 'application/rss+xml, application/xml, text/xml',
-      },
-    })
-
-    if (!res.ok) throw new Error(`RSS feed error: ${res.status}`)
-
-    const xml = await res.text()
-    const articles = parseRssItems(xml)
-
-    return NextResponse.json(articles)
-  } catch (err) {
-    console.error('RSS fetch error:', err)
-    return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 })
-  }
 }

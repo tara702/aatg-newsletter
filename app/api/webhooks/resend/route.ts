@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { getBrand, brandTables, BRANDS } from '@/lib/brands'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,8 +23,14 @@ export async function POST(req: NextRequest) {
     const email = data?.to?.[0] || data?.email
     if (!email) return NextResponse.json({ ok: true })
 
-    // Store event
-    await supabaseAdmin.from('email_events').insert({
+    const tagBrand =
+      data?.tags?.find?.((t: { name: string; value: string }) => t.name === 'brand')?.value ||
+      data?.tags?.brand
+
+    const brand = getBrand(tagBrand) || BRANDS[0]
+    const tables = brandTables(brand)
+
+    await supabaseAdmin.from(tables.emailEvents).insert({
       email: email.toLowerCase(),
       event_type: eventType,
       resend_email_id: data?.email_id || null,
@@ -31,18 +38,16 @@ export async function POST(req: NextRequest) {
       created_at: new Date().toISOString(),
     })
 
-    // Update subscriber status on bounce/unsubscribe
     if (eventType === 'bounced' || eventType === 'unsubscribed') {
       await supabaseAdmin
-        .from('subscribers')
+        .from(tables.subscribers)
         .update({ status: eventType === 'bounced' ? 'bounced' : 'unsubscribed' })
         .eq('email', email.toLowerCase())
     }
 
-    // Update engagement score on open/click
     if (eventType === 'opened' || eventType === 'clicked') {
       const { data: sub } = await supabaseAdmin
-        .from('subscribers')
+        .from(tables.subscribers)
         .select('engagement_score')
         .eq('email', email.toLowerCase())
         .single()
@@ -50,7 +55,7 @@ export async function POST(req: NextRequest) {
       if (sub) {
         const newScore = Math.min(10, (sub.engagement_score || 5) + (eventType === 'clicked' ? 2 : 1))
         await supabaseAdmin
-          .from('subscribers')
+          .from(tables.subscribers)
           .update({ engagement_score: newScore })
           .eq('email', email.toLowerCase())
       }

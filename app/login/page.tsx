@@ -36,10 +36,10 @@ function LoginForm() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-sm shadow-sm">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 bg-green-700 rounded-full flex items-center justify-center text-white font-bold">A</div>
+          <div className="w-9 h-9 bg-green-700 rounded-full flex items-center justify-center text-white font-bold">N</div>
           <div>
-            <p className="font-semibold text-gray-900 text-sm">Animals Around The Globe</p>
-            <p className="text-xs text-gray-400">Dashboard</p>
+            <p className="font-semibold text-gray-900 text-sm">Newsletter Hub</p>
+            <p className="text-xs text-gray-400">Multi-brand dashboard</p>
           </div>
         </div>
 
