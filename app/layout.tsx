@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Animals Around The Globe Newsletter",
-  description: "Newsletter dashboard for Animals Around The Globe",
+  title: "Newsletter Hub",
+  description: "Multi-brand newsletter dashboard",
 };
 
 export default function RootLayout({

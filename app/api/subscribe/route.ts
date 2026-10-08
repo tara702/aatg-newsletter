@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { resend, FROM_EMAIL, FROM_NAME } from '@/lib/resend'
+import { resend, brandFromAddress } from '@/lib/resend'
+import { getBrand, brandTables } from '@/lib/brands'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,31 +16,36 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { email, firstName, sourceUrl, utmCampaign, utmContent } = body
+    const { email, firstName, sourceUrl, utmCampaign, utmContent, brand: brandSlug } = body
 
-    if (!email || !email.includes('@')) {
-      return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
+    // Default to AATG for legacy embed forms that don't send brand yet
+    const brand = getBrand(brandSlug || 'animals-around-the-globe')
+    if (!brand) {
+      return NextResponse.json({ error: 'Unknown brand' }, { status: 400, headers: corsHeaders })
     }
 
-    // Check if already subscribed
+    if (!email || !email.includes('@')) {
+      return NextResponse.json({ error: 'Valid email required' }, { status: 400, headers: corsHeaders })
+    }
+
+    const tables = brandTables(brand)
+
     const { data: existing } = await supabaseAdmin
-      .from('subscribers')
+      .from(tables.subscribers)
       .select('id, status')
       .eq('email', email.toLowerCase())
       .single()
 
     if (existing) {
       if (existing.status === 'active') {
-        return NextResponse.json({ message: 'Already subscribed' }, { status: 200 })
+        return NextResponse.json({ message: 'Already subscribed' }, { status: 200, headers: corsHeaders })
       }
-      // Resubscribe
       await supabaseAdmin
-        .from('subscribers')
+        .from(tables.subscribers)
         .update({ status: 'active', updated_at: new Date().toISOString() })
         .eq('id', existing.id)
     } else {
-      // New subscriber
-      const { error } = await supabaseAdmin.from('subscribers').insert({
+      const { error } = await supabaseAdmin.from(tables.subscribers).insert({
         email: email.toLowerCase(),
         first_name: firstName || null,
         source_url: sourceUrl || null,
@@ -50,21 +56,21 @@ export async function POST(req: NextRequest) {
       if (error) throw error
     }
 
-    // Send welcome email via Resend
     await resend.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      from: brandFromAddress(brand),
       to: email,
-      subject: 'Welcome to Animals Around The Globe',
+      subject: `Welcome to ${brand.name}`,
       html: `
         <p>Hi ${firstName || 'there'},</p>
-        <p>Welcome! You're now subscribed to the Animals Around The Globe newsletter.</p>
-        <p>We'll send you the best animal stories, wildlife insights, and nature moments from around the world.</p>
-        <p>Talk soon,<br/>The Animals Around The Globe Team</p>
+        <p>Welcome! You're now subscribed to the ${brand.name} newsletter.</p>
+        <p>${brand.welcomeBlurb}</p>
+        <p>Talk soon,<br/>The ${brand.name} Team</p>
         <hr/>
         <p style="font-size:12px;color:#888;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/api/unsubscribe?email=${encodeURIComponent(email)}">Unsubscribe</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/api/unsubscribe?brand=${brand.slug}&email=${encodeURIComponent(email)}">Unsubscribe</a>
         </p>
       `,
+      tags: [{ name: 'brand', value: brand.slug }],
     })
 
     return NextResponse.json({ message: 'Subscribed successfully' }, { status: 201, headers: corsHeaders })

@@ -3,11 +3,17 @@ export function buildEmailHtml({
   preheader,
   content,
   unsubscribeUrl,
+  brandName,
+  brandDomain,
+  accentColor = '#c05a1a',
 }: {
   subject: string
   preheader: string
   content: string
   unsubscribeUrl: string
+  brandName: string
+  brandDomain: string
+  accentColor?: string
 }): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -23,8 +29,8 @@ export function buildEmailHtml({
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
 
         <!-- Header -->
-        <tr><td style="background:#c05a1a;padding:28px 40px;text-align:center;">
-          <p style="margin:0;color:#f5d5b8;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">Animals Around The Globe</p>
+        <tr><td style="background:${accentColor};padding:28px 40px;text-align:center;">
+          <p style="margin:0;color:#ffffff;opacity:0.85;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">${brandName}</p>
           <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:normal;font-family:Georgia,serif;">${subject}</h1>
         </td></tr>
 
@@ -36,10 +42,10 @@ export function buildEmailHtml({
         <!-- Footer -->
         <tr><td style="background:#f9f9f7;padding:24px 40px;text-align:center;border-top:1px solid #e8e8e4;">
           <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:12px;color:#888;">
-            You're receiving this because you subscribed at animalsaroundtheglobe.com
+            You're receiving this because you subscribed at ${brandDomain}
           </p>
           <p style="margin:0;font-family:Arial,sans-serif;font-size:12px;">
-            <a href="${unsubscribeUrl}" style="color:#2d5a27;text-decoration:underline;">Unsubscribe</a>
+            <a href="${unsubscribeUrl}" style="color:${accentColor};text-decoration:underline;">Unsubscribe</a>
           </p>
         </td></tr>
 
@@ -56,12 +62,18 @@ export function buildDigestHtml({
   intro,
   articles,
   unsubscribeUrl,
+  brandName,
+  brandDomain,
+  accentColor = '#c05a1a',
 }: {
   subject: string
   preheader: string
   intro: string
   articles: { title: string; excerpt: string; url: string; imageUrl?: string }[]
   unsubscribeUrl: string
+  brandName: string
+  brandDomain: string
+  accentColor?: string
 }): string {
   const articleBlocks = articles.map((a, i) => `
     ${i > 0 ? '<tr><td style="padding:0 40px"><hr style="border:none;border-top:1px solid #e8e8e4;margin:0" /></td></tr>' : ''}
@@ -71,13 +83,16 @@ export function buildDigestHtml({
         <a href="${a.url}" style="color:#1a1a1a;text-decoration:none;">${a.title}</a>
       </h2>
       <p style="margin:0 0 14px;color:#555;font-size:15px;line-height:1.6;">${a.excerpt}</p>
-      <a href="${a.url}" style="display:inline-block;background:#c05a1a;color:#fff;padding:10px 20px;border-radius:4px;font-family:Arial,sans-serif;font-size:13px;text-decoration:none;font-weight:bold;">Read More →</a>
+      <a href="${a.url}" style="display:inline-block;background:${accentColor};color:#fff;padding:10px 20px;border-radius:4px;font-family:Arial,sans-serif;font-size:13px;text-decoration:none;font-weight:bold;">Read More →</a>
     </td></tr>
   `).join('')
 
   return buildEmailHtml({
     subject,
     preheader,
+    brandName,
+    brandDomain,
+    accentColor,
     content: `
       ${intro ? `<p style="margin:0 0 24px;font-size:16px;line-height:1.7;">${intro}</p>` : ''}
       <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 -40px;width:calc(100% + 80px);">

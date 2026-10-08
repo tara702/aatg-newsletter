@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { resend, FROM_EMAIL, FROM_NAME } from '@/lib/resend'
+import { resend, brandFromAddress } from '@/lib/resend'
 import { buildEmailHtml } from '@/lib/email-template'
+import { brandTables } from '@/lib/brands'
+import { resolveBrandParam } from '@/lib/brand-api'
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ brand: string }> }
+) {
   try {
+    const resolved = await resolveBrandParam(params)
+    if ('error' in resolved) return resolved.error
+    const { brand } = resolved
+    const tables = brandTables(brand)
+
     const { broadcastId, testEmail } = await req.json()
 
     const { data: broadcast } = await supabaseAdmin
-      .from('broadcasts')
+      .from(tables.broadcasts)
       .select('*')
       .eq('id', broadcastId)
       .single()
@@ -16,26 +26,32 @@ export async function POST(req: NextRequest) {
     if (!broadcast) return NextResponse.json({ error: 'Broadcast not found' }, { status: 404 })
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL
+    const from = brandFromAddress(brand)
 
-    // Test send
+    const emailHtml = (email: string) =>
+      buildEmailHtml({
+        subject: broadcast.subject,
+        preheader: broadcast.preheader || '',
+        content: broadcast.content_html,
+        brandName: brand.name,
+        brandDomain: brand.domain,
+        accentColor: brand.accentColor,
+        unsubscribeUrl: `${appUrl}/api/unsubscribe?brand=${brand.slug}&email=${encodeURIComponent(email)}`,
+      })
+
     if (testEmail) {
       await resend.emails.send({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        from,
         to: testEmail,
         subject: `[TEST] ${broadcast.subject}`,
-        html: buildEmailHtml({
-          subject: broadcast.subject,
-          preheader: broadcast.preheader || '',
-          content: broadcast.content_html,
-          unsubscribeUrl: `${appUrl}/api/unsubscribe?email=${encodeURIComponent(testEmail)}`,
-        }),
+        html: emailHtml(testEmail),
+        tags: [{ name: 'brand', value: brand.slug }],
       })
       return NextResponse.json({ message: 'Test email sent' })
     }
 
-    // Get all active subscribers
     const { data: subscribers } = await supabaseAdmin
-      .from('subscribers')
+      .from(tables.subscribers)
       .select('email, first_name')
       .eq('status', 'active')
 
@@ -43,7 +59,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No active subscribers' }, { status: 400 })
     }
 
-    // Send in batches of 100
     const batchSize = 100
     let sent = 0
 
@@ -52,24 +67,19 @@ export async function POST(req: NextRequest) {
       await Promise.all(
         batch.map(sub =>
           resend.emails.send({
-            from: `${FROM_NAME} <${FROM_EMAIL}>`,
+            from,
             to: sub.email,
             subject: broadcast.subject,
-            html: buildEmailHtml({
-              subject: broadcast.subject,
-              preheader: broadcast.preheader || '',
-              content: broadcast.content_html,
-              unsubscribeUrl: `${appUrl}/api/unsubscribe?email=${encodeURIComponent(sub.email)}`,
-            }),
+            html: emailHtml(sub.email),
+            tags: [{ name: 'brand', value: brand.slug }],
           })
         )
       )
       sent += batch.length
     }
 
-    // Mark broadcast as sent
     await supabaseAdmin
-      .from('broadcasts')
+      .from(tables.broadcasts)
       .update({ status: 'sent', sent_at: new Date().toISOString(), recipient_count: sent })
       .eq('id', broadcastId)
 
