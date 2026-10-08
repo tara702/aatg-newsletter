@@ -1,13 +1,41 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+let _admin: SupabaseClient | null = null
+let _client: SupabaseClient | null = null
 
-// Client for browser / public use
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+function requireEnv(name: string) {
+  const value = process.env[name]
+  if (!value) throw new Error(`${name} is required`)
+  return value
+}
 
-// Admin client for server-side operations (API routes only)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { autoRefreshToken: false, persistSession: false }
+export function getSupabaseAdmin() {
+  if (_admin) return _admin
+  _admin = createClient(requireEnv('NEXT_PUBLIC_SUPABASE_URL'), requireEnv('SUPABASE_SERVICE_ROLE_KEY'), {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  return _admin
+}
+
+export function getSupabase() {
+  if (_client) return _client
+  _client = createClient(requireEnv('NEXT_PUBLIC_SUPABASE_URL'), requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
+  return _client
+}
+
+/** Lazy proxy so importing this module during build doesn't require env vars. */
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get(_target, prop, receiver) {
+    const client = getSupabaseAdmin() as any
+    const value = client[prop]
+    return typeof value === 'function' ? value.bind(client) : Reflect.get(client, prop, receiver)
+  },
+})
+
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, prop, receiver) {
+    const client = getSupabase() as any
+    const value = client[prop]
+    return typeof value === 'function' ? value.bind(client) : Reflect.get(client, prop, receiver)
+  },
 })

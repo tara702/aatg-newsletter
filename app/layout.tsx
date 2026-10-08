@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Newsletter Hub",
-  description: "Multi-brand newsletter dashboard",
+  title: "AMG Newsletter Hub",
+  description: "Multi-brand newsletter dashboard for AMG Publishing",
 };
 
 export default function RootLayout({

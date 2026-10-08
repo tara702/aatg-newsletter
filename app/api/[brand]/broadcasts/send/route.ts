@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { resend, brandFromAddress } from '@/lib/resend'
 import { buildEmailHtml } from '@/lib/email-template'
-import { brandTables } from '@/lib/brands'
+import { brandLogoUrl, brandTables } from '@/lib/brands'
 import { resolveBrandParam } from '@/lib/brand-api'
 
 export async function POST(
@@ -36,6 +36,7 @@ export async function POST(
         brandName: brand.name,
         brandDomain: brand.domain,
         accentColor: brand.accentColor,
+        logoUrl: brandLogoUrl(brand, appUrl || ''),
         unsubscribeUrl: `${appUrl}/api/unsubscribe?brand=${brand.slug}&email=${encodeURIComponent(email)}`,
       })
 

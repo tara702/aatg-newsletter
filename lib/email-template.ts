@@ -6,6 +6,7 @@ export function buildEmailHtml({
   brandName,
   brandDomain,
   accentColor = '#c05a1a',
+  logoUrl,
 }: {
   subject: string
   preheader: string
@@ -14,6 +15,7 @@ export function buildEmailHtml({
   brandName: string
   brandDomain: string
   accentColor?: string
+  logoUrl?: string
 }): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -30,7 +32,12 @@ export function buildEmailHtml({
 
         <!-- Header -->
         <tr><td style="background:${accentColor};padding:28px 40px;text-align:center;">
-          <p style="margin:0;color:#ffffff;opacity:0.85;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">${brandName}</p>
+          ${
+            logoUrl
+              ? `<img src="${logoUrl}" alt="${brandName}" width="64" height="64" style="display:block;margin:0 auto 12px;border-radius:50%;background:#fff;object-fit:cover;" />`
+              : ''
+          }
+          <p style="margin:0;color:#ffffff;opacity:0.9;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">${brandName}</p>
           <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;font-weight:normal;font-family:Georgia,serif;">${subject}</h1>
         </td></tr>
 
@@ -65,6 +72,7 @@ export function buildDigestHtml({
   brandName,
   brandDomain,
   accentColor = '#c05a1a',
+  logoUrl,
 }: {
   subject: string
   preheader: string
@@ -74,6 +82,7 @@ export function buildDigestHtml({
   brandName: string
   brandDomain: string
   accentColor?: string
+  logoUrl?: string
 }): string {
   const articleBlocks = articles.map((a, i) => `
     ${i > 0 ? '<tr><td style="padding:0 40px"><hr style="border:none;border-top:1px solid #e8e8e4;margin:0" /></td></tr>' : ''}
@@ -93,6 +102,7 @@ export function buildDigestHtml({
     brandName,
     brandDomain,
     accentColor,
+    logoUrl,
     content: `
       ${intro ? `<p style="margin:0 0 24px;font-size:16px;line-height:1.7;">${intro}</p>` : ''}
       <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 -40px;width:calc(100% + 80px);">

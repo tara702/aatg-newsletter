@@ -101,3 +101,52 @@ BEGIN
     END IF;
   END IF;
 END $$;
+
+-- ============================================================
+-- AMG Newsletter Hub: users, brand access, automation schedules
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS hub_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'editor' CHECK (role IN ('admin', 'editor')),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS hub_user_brands (
+  user_id UUID NOT NULL REFERENCES hub_users(id) ON DELETE CASCADE,
+  brand_slug TEXT NOT NULL,
+  PRIMARY KEY (user_id, brand_slug)
+);
+
+CREATE TABLE IF NOT EXISTS brand_schedules (
+  brand_slug TEXT PRIMARY KEY,
+  enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  -- 0=Sunday ... 6=Saturday (UTC)
+  day_of_week INTEGER NOT NULL DEFAULT 1 CHECK (day_of_week BETWEEN 0 AND 6),
+  hour_utc INTEGER NOT NULL DEFAULT 14 CHECK (hour_utc BETWEEN 0 AND 23),
+  last_sent_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_hub_users_email ON hub_users(email);
+CREATE INDEX IF NOT EXISTS idx_hub_user_brands_user ON hub_user_brands(user_id);
+
+ALTER TABLE hub_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hub_user_brands ENABLE ROW LEVEL SECURITY;
+ALTER TABLE brand_schedules ENABLE ROW LEVEL SECURITY;
+
+-- Seed default schedules (disabled until turned on in the hub)
+INSERT INTO brand_schedules (brand_slug, enabled, day_of_week, hour_utc)
+VALUES
+  ('animals-around-the-globe', FALSE, 1, 14),
+  ('travel-binger', FALSE, 2, 14),
+  ('doggo-digest', FALSE, 3, 14),
+  ('feline-fam', FALSE, 4, 14),
+  ('weather-fox', FALSE, 5, 14),
+  ('discover-wild-science', FALSE, 1, 15)
+ON CONFLICT (brand_slug) DO NOTHING;
