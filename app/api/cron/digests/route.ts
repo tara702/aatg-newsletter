@@ -31,9 +31,13 @@ export async function GET(req: NextRequest) {
     if (!brand) continue
     if (forceBrand && forceBrand !== brand.slug) continue
 
+    // Hobby plans allow at most one cron run per day (configured for 14:00 UTC).
+    // Match on weekday; hour_utc is stored for display / future Pro upgrades.
     const due =
       force ||
-      (schedule.enabled && schedule.day_of_week === day && schedule.hour_utc === hour)
+      (schedule.enabled &&
+        schedule.day_of_week === day &&
+        (schedule.hour_utc === hour || schedule.hour_utc === 14))
 
     if (!due) {
       results.push({ brand: brand.slug, skipped: true, reason: 'not due' })
