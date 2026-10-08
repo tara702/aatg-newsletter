@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getBrand, BRANDS } from '@/lib/brands'
 
@@ -16,22 +17,19 @@ export default async function BrandLayout({
   const base = `/dashboard/${brand.slug}`
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <aside className="w-56 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-5 border-b border-gray-200">
-          <Link href="/dashboard" className="text-[10px] uppercase tracking-wide text-gray-400 hover:text-gray-600">
-            ← All brands
+    <div className="min-h-screen flex" style={{ background: `linear-gradient(180deg, ${brand.softColor} 0%, #f8fafc 220px)` }}>
+      <aside className="w-60 bg-white border-r border-gray-200 flex flex-col">
+        <div className="p-5 border-b border-gray-200" style={{ backgroundColor: brand.softColor }}>
+          <Link href="/dashboard" className="text-[10px] uppercase tracking-wide text-gray-500 hover:text-gray-700">
+            ← AMG Newsletter Hub
           </Link>
-          <div className="flex items-center gap-2 mt-3">
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-              style={{ backgroundColor: brand.accentColor }}
-            >
-              {brand.initial}
+          <div className="flex items-center gap-2.5 mt-3">
+            <div className="w-9 h-9 rounded-full bg-white border border-gray-100 overflow-hidden shadow-sm flex-shrink-0">
+              <Image src={brand.logoPath} alt={brand.name} width={36} height={36} className="w-full h-full object-cover" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-gray-900 leading-none truncate">{brand.name}</p>
-              <p className="text-xs text-gray-400 mt-0.5 truncate">{brand.domain}</p>
+              <p className="text-xs text-gray-500 mt-1 truncate">{brand.domain}</p>
             </div>
           </div>
         </div>
@@ -56,18 +54,23 @@ export default async function BrandLayout({
 
         <div className="p-3 border-t border-gray-200">
           <p className="text-[10px] uppercase tracking-wide text-gray-400 px-3 mb-2">Switch brand</p>
-          <div className="space-y-0.5 max-h-40 overflow-auto">
+          <div className="space-y-0.5 max-h-48 overflow-auto">
             {BRANDS.map(b => (
               <Link
                 key={b.slug}
                 href={`/dashboard/${b.slug}`}
-                className={`block px-3 py-1.5 rounded text-xs truncate ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs truncate ${
                   b.slug === brand.slug
-                    ? 'bg-gray-100 text-gray-900 font-medium'
+                    ? 'font-medium text-gray-900'
                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                 }`}
+                style={b.slug === brand.slug ? { backgroundColor: b.softColor } : undefined}
               >
-                {b.name}
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: b.accentColor }}
+                />
+                <span className="truncate">{b.name}</span>
               </Link>
             ))}
           </div>

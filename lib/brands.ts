@@ -19,8 +19,11 @@ export interface Brand {
   fromName: string
   digestName: string
   accentColor: string
+  /** Softer tint for cards / selected states */
+  softColor: string
   welcomeBlurb: string
   initial: string
+  logoPath: string
 }
 
 export const BRANDS: Brand[] = [
@@ -35,10 +38,12 @@ export const BRANDS: Brand[] = [
     fromEmail: 'newsletter@animalsaroundtheglobe.com',
     fromName: 'Animals Around The Globe',
     digestName: 'The Animal Digest',
-    accentColor: '#2d5a27',
+    accentColor: '#c05a1a',
+    softColor: '#fff4ec',
     welcomeBlurb:
       "We'll send you the best animal stories, wildlife insights, and nature moments from around the world.",
     initial: 'A',
+    logoPath: '/brands/animals-around-the-globe.png',
   },
   {
     slug: 'travel-binger',
@@ -52,8 +57,10 @@ export const BRANDS: Brand[] = [
     fromName: 'Travel Binger',
     digestName: 'The Travel Digest',
     accentColor: '#0f4c81',
+    softColor: '#eef5fb',
     welcomeBlurb: "We'll send you destination guides, travel tips, and stories worth the trip.",
     initial: 'T',
+    logoPath: '/brands/travel-binger.png',
   },
   {
     slug: 'doggo-digest',
@@ -66,9 +73,11 @@ export const BRANDS: Brand[] = [
     fromEmail: 'newsletter@doggodigest.com',
     fromName: 'Doggo Digest',
     digestName: 'Doggo Digest',
-    accentColor: '#c05a1a',
+    accentColor: '#c45c26',
+    softColor: '#fff3eb',
     welcomeBlurb: "We'll send you the best dog stories, care tips, and heartfelt moments every week.",
     initial: 'D',
+    logoPath: '/brands/doggo-digest.png',
   },
   {
     slug: 'feline-fam',
@@ -82,8 +91,10 @@ export const BRANDS: Brand[] = [
     fromName: 'Feline Fam',
     digestName: 'The Feline Digest',
     accentColor: '#7c3aed',
+    softColor: '#f5f0ff',
     welcomeBlurb: "We'll send you cat stories, care tips, and feline moments you'll love.",
     initial: 'F',
+    logoPath: '/brands/feline-fam.png',
   },
   {
     slug: 'weather-fox',
@@ -97,8 +108,10 @@ export const BRANDS: Brand[] = [
     fromName: 'Weather Fox',
     digestName: 'The Weather Digest',
     accentColor: '#0369a1',
+    softColor: '#eef8fd',
     welcomeBlurb: "We'll send you forecasts, weather stories, and climate insights you can use.",
     initial: 'W',
+    logoPath: '/brands/weather-fox.png',
   },
   {
     slug: 'discover-wild-science',
@@ -112,8 +125,10 @@ export const BRANDS: Brand[] = [
     fromName: 'Discover Wild Science',
     digestName: 'The Wild Science Digest',
     accentColor: '#166534',
+    softColor: '#eef8f1',
     welcomeBlurb: "We'll send you discoveries, research stories, and wild science worth knowing.",
     initial: 'S',
+    logoPath: '/brands/discover-wild-science.png',
   },
 ]
 
@@ -136,6 +151,11 @@ export function brandTables(brand: Brand) {
     broadcasts: `${brand.tablePrefix}_broadcasts`,
     emailEvents: `${brand.tablePrefix}_email_events`,
   }
+}
+
+export function brandLogoUrl(brand: Brand, appUrl = process.env.NEXT_PUBLIC_APP_URL || '') {
+  const base = appUrl.replace(/\/$/, '')
+  return `${base}${brand.logoPath}`
 }
 
 export function defaultDigestSubject(brand: Brand, date = new Date()) {
