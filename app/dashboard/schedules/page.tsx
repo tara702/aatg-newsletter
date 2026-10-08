@@ -63,7 +63,8 @@ export default function SchedulesPage() {
           </Link>
           <h1 className="text-xl font-semibold text-gray-900 mt-1">Automated digests</h1>
           <p className="text-sm text-gray-500 mt-1">
-            When enabled, the hub curates the latest RSS articles and sends that brand’s digest on the schedule below (UTC).
+            When enabled, the hub curates the latest RSS articles and sends that brand’s digest on the selected weekday
+            around 14:00 UTC (Vercel Hobby allows one daily cron).
           </p>
         </div>
       </header>
